@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	
+	<!-- title -->
+	
+	<title>
+	
+		实现一个简单的64位操作系统-(0x04)实现一个完整的Boot | 
+	 
+	Kernel Thread
+	</title>
+	
+	<!-- keywords,description -->
+	 
+		<meta name="description" content="一个喜欢音乐的科研小白的博客" />
+	
+
+	<!-- favicon -->
+	
+	<link rel="shortcut icon" href="/favicon.png">
+	
+  
+
+	
+<link rel="stylesheet" href="/css/main.css">
+
+	
+<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/darcula.min.css">
+
+
+	
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery-pjax@2.0.1/jquery.pjax.min.js"></script>
+
+	
+<script src="/js/main.js"></script>
+
+	
+		
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
+
+		
+<script src="https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js"></script>
+
+	
+	
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+	<header id="header">
+    <a id="title" href="/" class="logo">Kernel Thread</a>
+
+	<ul id="menu">
+		<li class="menu-item">
+			<a href="/about" class="menu-item-link">ABOUT</a>
+		</li>
+		
+		<!--
+		<li class="menu-item">
+			<a href="https://github.com/wujun234/uid-generator-spring-boot-starter" class="menu-item-link" target="_blank">
+				UidGenerator
+			</a>
+		</li>
+		-->
+		<li class="menu-item">
+			<a href="https://github.com/dalvikart" class="menu-item-link" target="_blank">
+				<i class="fa fa-github fa-2x"></i>
+			</a>
+		</li>
+	</ul>
+</header>
+
+	
+<div id="sidebar">
+	<button id="sidebar-toggle" class="toggle" ><i class="fa fa-arrow-right " aria-hidden="true"></i></button>
+	
+	<div id="site-toc">
+		<input id="search-input" class="search-input" type="text" placeholder="search...">
+		<div id="tree">
+			
+
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+										实现一个简单的64位操作系统-0x01-环境搭建
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x02-%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84boot/">
+										实现一个简单的64位操作系统-0x02-编写一个简单的boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x03-%E7%86%9F%E6%82%89FAT12%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+										实现一个简单的64位操作系统-0x03-熟悉FAT12文件系统
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file active">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x04-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84Boot/">
+										实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+		</div>
+	</div>
+</div>
+
+	<!-- 引入正文 -->
+	<div id="content">
+		<h1 id="article-title">
+
+	实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+</h1>
+<div class="article-meta">
+	
+	<span>Kernel Thread</span>
+	<span>2020-04-29 00:56:25</span>
+    
+		<div id="article-categories">
+            
+		</div>
+    
+</div>
+
+<div id="article-content">
+	<h1 id="0x01-概述"><a href="#0x01-概述" class="headerlink" title="0x01 概述"></a>0x01 概述</h1><p>之前已经熟悉过Boot的写法和FAT12文件系统的结构，现在要开始实现一个完整的Boot，以构建一个FAT12文件系统、从文件系统中搜索并读入Loader文件以及跳转到加载的Loader处执行。</p>
+<h1 id="0x02-实现"><a href="#0x02-实现" class="headerlink" title="0x02 实现"></a>0x02 实现</h1><p>首先是一些伪代码，用来定义一些预计算的值来减少计算。在FAT12中，一些值是固定的，但是在标准的计算当中又需要使用这些值参与计算。如果将这些值提前计算好，然后用伪指令定义出来，就能节省计算成本和空间成本(代码量)。</p>
+<pre><code class="ASM">; start address
+org 0x7c00
+
+BaseOfStack     equ 0x7c00
+RootDirSecNum   equ 14                  ; sector count of root directory  (BPB_RootEntCnt * 32) / BPB_BytesPerSec
+DirStruPerSec   equ 16                  ; directory structure in on sector
+RootDirStart    equ 19
+BufferAddr      equ 0x8000
+DataStart       equ 31                  ; realstart - 2
+FATTabStart     equ 1
+BaseOfLoader    equ 0x1000
+OffsetOfLoader  equ 0x0000</code></pre>
+<p><code>org</code>指定起始地址位0x7c00。BaseOfStack用来给SP赋值作为初始栈底。<br>RootDirSecNum是根据<code>BPB_RootEntCnt</code>计算的，由于根目录下每个目录结构占32 Bytes，所以用<code>BPB_RootEntCnt * 32 / BPB_BytesPerSec</code>就能得到根目录占用的扇区数。在这就是<code>228 * 32 / 512 = 14</code>。<br><code>DirStruPerSec</code>是每个扇区的目录结构数，在遍历根目录时需要用到。计算方法是用<code>BPB_BytesPerSec</code>也就是每个扇区的字节数，除以每个目录结构的大小。在这就是<code>512 / 32 = 16</code>。<br>RootDirStart是根目录的起始扇区数，上一章算过。<br>BufferAddr是用来存储临时数据的地址。<br>DataStart是数据区的起始扇区。计算方法是用根目录起始扇区加上根目录占用扇区，也就是<code>RootDirStart + RootDirSecNum = 19 + 14 = 33</code>。但是由FAT表中的簇号转换为线性扇区数时，需要减2(FAT表前两项保留，为了不浪费空间，数据区从0开始存储数据)，将这个减2提取出来，提前算好，也就得到了31这值。给出公式的话，就是<code>LinearSecNum = DataStart + (OffsetInFAT - 2) * BPB_SecPerClus = DataStart - 2 * BPB_SecPerClus + OffsetInFAT * BPB_SecPerClus</code>，而在这里<code>BPB_SecPerClus</code>是1，也就变成了<code>LinearSecNum = DataStart - 2 + OffsetInFAT</code>，而DataStart算出来是<code>33</code>，索性提前减2变成<code>31</code>，之后计算起来就简单了，用<code>DataStart + OffsetInFAT</code>就能算出当前簇的起始扇区。<br>FATTabStart是FAT1表的起始扇区。上一章算过。<br>BaseOfLoader和OffsetOfLoader分别是Loader的基址和偏移，最后Loader将存到<code>BaseOfLoader:OffsetOfLoader</code>中去，换成线性地址就是<code>BaseOfLoader &lt;&lt; 4 + OffsetOfLoader</code>，在这就是<code>0x1000 &lt;&lt; 4 + 0x0000 = 0x10000</code>。<br>接下来是FAT12文件系统的一些结构定义。</p>
+<pre><code class="ASM">; Entry point of boot sector
+jmp     short   Label_Start             ; jump to boot program
+nop                                     ; placeholder
+BS_OEMName          db  &#39;WINIMAGE&#39;      ; OEM Name
+BPB_BytesPerSec     dw  512             ; bytes per section
+BPB_SecPerClus      db  1               ; sectors per cluster
+BPB_RsvdSecCnt      dw  1               ; reserved sector count (boot sector)
+BPB_NumFATs         db  2               ; number of FAT tables
+BPB_RootEntCnt      dw  224             ; max dir count of root dir
+BPB_TotSec16        dw  2880            ; total number of sectors
+BPB_Media           db  0xf0            ; drive type
+BPB_FATSz16         dw  9               ; size of each FAT table
+BPB_SecPerTrk       dw  18              ; sectors per track
+BPB_NumHeads        dw  2               ; number of magnetic heads
+BPB_HiddSec         dd  0               ; number of hidden sectors
+BPB_TotSec32        dd  0               ; this value effects when BPB_TotSec16 is 0
+BS_DrvNum           db  0               ; number of drives
+BS_Reserved1        db  0               ; Reserved
+BS_BootSig          db  29h             ; boot signature
+BS_VolID            dd  0               ; volume ID
+BS_VolLab           db  &#39;bootloader &#39;   ; volume name, padding with space(20h)
+BS_FileSysType      db  &#39;FAT12   &#39;      ; file system type</code></pre>
+<p><code>jmp     short   Label_Start</code>放在第一行的目的是跳转到真正的程序入口，因为下面全都是一些数据的定义。NOP放在这的原因不明，感觉像是一个占位符。每一个字段的作用可以参考<a href="http://elm-chan.org/docs/fat_e.html" target="_blank" rel="noopener">FAT Filesystem</a>。<br>真正的引导程序入口从<code>Label_Start</code>处开始。<br>首先是寄存器初始化。</p>
+<pre><code class="ASM">; entry point
+Label_Start:
+; init registers
+mov     ax, cs
+mov     ds, ax
+mov     es, ax
+mov     ss, ax
+mov     sp, BaseOfStack</code></pre>
+<p>然后跟之前的示例Boot一样，清屏、设置光标位置和打印引导字符串：</p>
+<pre><code class="ASM">; clear screen
+; AH = 06h roll pages
+; AL = page num (0 to clear screen)
+; BH = color attributes
+; CL = left row, CH = left column
+; DL = right row, DL = right column
+mov     ax, 0600h
+mov     bx, 0700h
+mov     cx, 0
+mov     dx, 184Fh
+int     10h
+
+; set focus
+; AH = 02h set focus
+; DL = row
+; DH = column
+; BH = page num
+mov     ax, 0200h
+mov     bx, 0000h
+mov     dx, 0000h
+int     10h
+
+; display boot string
+push    0000h
+push    StartBootMessageLength
+push    StartBootMessage
+call    Func_PrintString</code></pre>
+<p>接下来调用了一个函数，来从根目录寻找特定文件名的文件。</p>
+<pre><code class="ASM">push    LoaderFileName
+call    Func_FindFile</code></pre>
+<p>这个函数是自己实现的，从栈里接受一个字符串地址作为参数，从根目录里寻找一个文件名为参数指向文件名的文件，然后将它的第一个簇号用<code>EAX</code>返回。搜索成功返回第一个簇号，搜索失败返回0。<code>Func_FindFile</code>实现如下：</p>
+<pre><code class="ASM">;;; Function:         Func_FindFile
+;;; Params:           Stack: FileNameAddress
+;;; Return value:     AX = FirstCluster, zero if not found.
+;;; Descryption:      Find the file named [FileNameAddress] in root directory.
+;;;                   The length of file name must be 11 bytes.
+Func_FindFile:
+; construct stack frame
+push    bp
+mov     bp, sp
+
+xor     cx, cx ; ch = inner, cl = outer
+
+Label_StartSearch:
+cmp     cl, RootDirSecNum
+ja      Label_FileNotFound
+
+mov     ax, RootDirStart
+add     al, cl ; AX = current sector
+
+push    BufferAddr
+push    ax
+call    Func_ReadOneSector
+
+xor     ch, ch
+Label_InnerLoop:
+mov     al, ch
+xor     ah, ah
+mov     bx, 32
+mul     bx
+add     ax, BufferAddr
+mov     bx, ax ; BX = cur dir struc addr
+
+; BX = cur file name (11 btyes)
+
+push    bx
+call    Func_CompareFileName
+cmp     ax, 0
+jnz     Label_FileFound
+
+inc     ch
+
+cmp     ch, DirStruPerSec
+jle     Label_InnerLoop
+
+; go to next round
+inc     cl
+jmp     Label_StartSearch
+
+Label_FileFound:
+mov     ax, [bx + 0x1a]
+jmp     Label_FuncReturn
+
+Label_FileNotFound:
+xor     ax, ax
+
+Label_FuncReturn:
+mov     sp, bp
+pop     bp
+ret     02h</code></pre>
+<p>之后所有的函数定义都将在上面标出它的函数名、参数传递方法、返回值以及函数描述。我自认为这是一个比较好的习惯，也坚持这样做了。因为这样做的话，很久之后再去调用这个函数的话就能很快想起调用它的方法。<br><code>Func_FindFile</code>函数使用栈传参，接受一个参数，参数为要搜索的文件名地址。返回值为这个文件的第一个簇号。<br>先建立一个栈帧：</p>
+<pre><code class="ASM">push    bp
+mov     bp, sp</code></pre>
+<p>将之前的<code>bp</code>入栈，保护之前的<code>bp</code>，然后将栈顶的地址给<code>bp</code>，之后使用bp来寻找传进来的参数。<br>之后将<code>cx</code>清0：<code>xor cx,cx</code>，由于之后需要用两层循环来进行文件查找(逐扇区读入，每个扇区内按目录结构<code>32 B</code>大小查找），并且每个循环次数都在<code>0xff</code>以内，所以使用<code>cl</code>来记录外层循环次数，用<code>ch</code>来记录内层循环记录。<br>然后开始外层循环：</p>
+<pre><code class="ASM">Label_StartSearch:
+cmp     cl, RootDirSecNum
+ja      Label_FileNotFound</code></pre>
+<p>比较<code>cl</code>与<code>RootDirSecNum</code>的大小，如果大于<code>RootDirSecNum</code>就跳到<code>Label_FileNotFound</code>。也就是，如果已经搜索完根目录的每一个扇区还没有找到指定文件的话，就判断为根目录下不存在指定，跳到文件不存在的标签处。</p>
+<pre><code class="ASM">mov     ax, RootDirStart
+add     al, cl ; AX = current sector
+
+push    BufferAddr
+push    ax
+call    Func_ReadOneSector</code></pre>
+<p>然后将<code>RootDirStart</code>传给<code>AX</code>，并加上<code>cl</code>。这里也就是根据根目录的开始扇区，加上偏移，得到当前需要读入的扇区。然后将缓存区地址和扇区号入栈，传给<code>Func_ReadOneSector</code>来将当前循环到的目录扇区读入<code>Buffer</code>中。<code>Func_ReadOneSector</code>是实现的函数，用来从指定扇区中读入一个扇区的数据到指定内存中。后面会提到它的实现。<br>接着就进入了内层循环。</p>
+<pre><code class="ASM">xor     ch, ch
+Label_InnerLoop:
+mov     al, ch
+xor     ah, ah
+mov     bx, 32
+mul     bx
+add     ax, BufferAddr
+mov     bx, ax ; BX = cur dir struc addr
+
+; BX = cur file name (11 btyes)</code></pre>
+<p>每次进入内层循环前先将计数器清零<code>xor ch,ch</code>，因为要从Buffer的头部，也就是这个扇区的开始处，进行文件查找。然后，每次循环时用偏移值ch乘32得到字节偏移，并加上<code>BufferAddr</code>，得到指向当前目录结构的指针，存入<code>bx</code>中。并且，根据目录结构的定义，开头11个字节为文件名，所以<code>bx</code>是目录结构指针的同时也是文件名指针。<br>然后要开始得到目录结构指针以及判断文件名了。</p>
+<pre><code class="ASM">push    bx
+call    Func_CompareFileName
+cmp     ax, 0
+jnz     Label_FileFound</code></pre>
+<p>将<code>bx</code>作为参数传入，并调用<code>Func_CompareFileName</code>。这个函数会比较传入的文件名指针指向的字符串与Loader文件名是否相等，如果不相等返回0，相等则返回一个非0值。对返回值ax进行判断，如果是非0值，则跳到<code>Label_FileFound</code>，执行找到文件的流程。否则继续后续循环。</p>
+<pre><code class="ASM">inc     ch
+
+cmp     ch, DirStruPerSec
+jle     Label_InnerLoop
+
+; go to next round
+inc     cl
+jmp     Label_StartSearch</code></pre>
+<p>这里先对内层计数器加1，然后比较与<code>DirStruPerSec</code>的大小，如果不大于这个值，也就是没到该扇区结尾的话，就继续下次内层循环。否则跳出内层循环，增加外层循环计数器，并且跳到外层循环的下一次循环判断处。这两个循环对应到C语言的逻辑上，伪代码应该下面这样的：</p>
+<pre><code class="C">char i = 0;
+do
+{
+    ...
+    for(char j = 0; j&lt;= DirStruPerSec; ++j)
+    {
+        ...
+    }
+    ++i;
+} while(i &lt;= Label_FileNotFound)</code></pre>
+<p>然后就是两个判断结果的逻辑。</p>
+<pre><code class="ASM">Label_FileFound:
+mov     ax, [bx + 0x1a]
+jmp     Label_FuncReturn
+
+Label_FileNotFound:
+xor     ax, ax</code></pre>
+<p>如果找到了文件，就会执行Label_FileFound标签处的指令，将<code>bx + 0x1a</code>处的值，也就是目录结构里的<code>DIR_FstClus</code>(首簇簇号)传给ax，并跳到返回逻辑处。如果没找到文件，就会将<code>ax</code>清0并返回。<br>最后就是返回逻辑了。</p>
+<pre><code class="ASM">Label_FuncReturn:
+mov     sp, bp
+pop     bp
+ret     02h</code></pre>
+<p>将bp的值给sp，用来平衡栈。然后将被保护的<code>bp</code>出栈恢复，最后使用<code>ret 02h</code>返回。这里我实现的函数用的都是<code>std call</code>的调用约定，由被调用者清栈。因为这里不需要用到可变参数，为了调用方便，使用<code>std call</code>是最好的方法。<br>然后，上面有两个很重要的函数还没有提到实现。分别是<code>Func_ReadOneSector</code>和<code>Func_CompareFileName</code>。接下来就是它们的实现了。<br>先是<code>Func_ReadOneSector</code>，给出它的描述：</p>
+<pre><code class="ASM">;;; Function:         Func_ReadOneSector
+;;; Params:           Stack: SectorNum, BufAddr 
+;;; Return value:     AH = StatusCode
+;;; Descryption:      Read one sector from floppy, SectorNum is the sector number,
+;;;                   BufAddr is the buffer address to store data of the sector read.</code></pre>
+<p>函数接受两个参数，用栈传递。第一个参数是要读的扇区号(线性)，第二个参数是要读入的内存地址。要注意的是，由于使用的是<code>std call</code>调用约定，参数是从右往左入栈的。返回值是读入的状态号，用<code>AH</code>存储。具体又哪些状态号，可以查阅<code>INT 0x13</code>中断的说明。<br>然后也是形成栈帧，并保护需要用到的寄存器。</p>
+<pre><code class="ASM">push    bp
+mov     bp, sp
+sub     sp, 02h
+
+; protect registers
+push    bx
+push    cx
+push    dx
+
+; SectorNum = bp + 4
+; BufAddr   = bp + 6</code></pre>
+<p>形成栈帧后，就能用bp对参数和局部变量寻址了。这里将栈顶抬高了0x2 bytes，目的是用两个字节来存储转化后的物理扇区号。<code>bp + 4</code>处是传入的线性扇区号，<code>bp + 6</code>是传入的缓存区地址。<code>bp - 2</code>是局部变量物理扇区号。由于现在是16位实模式，入栈的返回地址和保护的<code>bp</code>都是<code>0x2 bytes</code>，所以第一个参数是从<code>bp + 4</code>处开始的。<br>形成栈帧之后对<code>bx、cx、dx</code>进行了入栈保护。<br>接下来就对线性扇区进行计算，得到磁头号、柱面号和扇区号。得到这三个物理位置后，就能确定软盘上唯一的一个扇区了。关于计算方法，<a href="http://blog.sina.com.cn/s/blog_3edcf6b80100crz1.html" target="_blank" rel="noopener">FAT12文件系统 数据存储方式详解</a>这篇文章中有比较详细的介绍。我这里对他的计算方法中能够提前计算的地方都进行了提前计算，实现上稍有不同。但是原理是一样的。</p>
+<pre><code class="ASM">mov     ax, [bp + 4]
+mov     bx, [BPB_SecPerTrk]
+div     bx
+
+inc     dx
+mov     [bp - 2], dx ; [bp - 2] is sector num
+
+mov     bx, [BPB_NumHeads]
+xor     bh, bh
+xor     dx, dx
+div     bx ; AX is cylinder, DX is head num</code></pre>
+<p>先将传入的线性扇区号传入<code>AX</code>中，并且将每个磁道的扇区数传入<code>bx</code>中，将它们相除，得到商ax和余数<code>dx</code>。将余数加<code>1</code>，得到物理扇区号，存入<code>[bp - 2]</code>局部变量中。然后将磁头数存入<code>bx</code>中，用之前得到的商除以磁头数，得到柱面号<code>ax</code>和磁头号<code>dx</code>。这样就得到读入一个扇区需要的三个物理位置了。<br>接下来开始使用<code>INT 0x13</code>中断进行数据读入。</p>
+<pre><code class="ASM">mov     cx, [bp - 2] ; CL = sector num
+mov     ch, al ; CH = cylinder
+mov     dh, dl ; DH = head num
+mov     dl, [BS_DrvNum] ; DL = drive num
+mov     al, 1 ; AL = read count
+mov     ah, 02h ; AH = 0x02
+mov     bx, [bp + 6]
+int     13h</code></pre>
+<p>从<code>INT 0x13</code>的描述中可以得到，<code>AH</code>传入功能号，这里是<code>0x2</code>，代表从磁盘/软盘中读入数据。<code>AL</code>传的是读入的扇区数量。<code>ES:BX</code>传入的是读入的内存地址。<code>CL</code>传物理扇区号。<code>CH</code>传柱面号。<code>DL</code>传驱动器号。<code>DH</code>传磁头号。将上面计算得到的值传入对应位置，然后使用0x13号中断就能进行读入了。读入结果状态码会传入AH中。接下来只要将其返回就行了。</p>
+<pre><code class="ASM">; recover registers
+pop     dx
+pop     cx
+pop     bx
+
+; recover stack frame
+mov     sp, bp
+pop     bp 
+ret     04h</code></pre>
+<p>同样的，将保护的<code>dx、cx、bx</code>出栈恢复，然后关闭栈帧，最后用<code>RET 04h</code>返回。因为有两个字的参数，一共4字节，所以是04h。<br>接着是判断文件名的<code>Func_CompareFileName</code>函数。<br>先看它的描述：</p>
+<pre><code class="ASM">;;; Function:         Func_CompareFileName
+;;; Parms:            Stack: FileNameAddr
+;;; Return value:     AX = not zero if equal, 0 if not equal
+;;; Descryption:      Compare if the file name is equal the loader file name.</code></pre>
+<p><code>Func_CompareFileName</code>函数从栈中接受一个参数<code>FileNameAddr</code>，指向需要判断的文件名。返回值存在AX中，如果字符串相同返回1，否则返回0。<br>然后是它的实现：</p>
+<pre><code class="ASM">Func_CompareFileName:
+push    bx
+push    cx
+
+; FileNameAddr = [sp + 6]
+
+mov     bx, sp
+mov     ax, 1
+cld
+mov     cx, 11
+mov     si, [bx + 6]
+mov     di, LoaderFileName
+repe cmpsb
+jcxz   Label_Equal
+
+xor     ax, ax
+
+Label_Equal:
+pop     cx
+pop     bx
+ret 02h</code></pre>
+<p>由于没使用到局部变量，为了节省空间，这里就没有形成栈帧了。先将<code>bx、cx</code>入栈保护。入栈后，<code>sp + 6</code>处就是传入的参数地址(返回地址<code>0x2 + bx0x2 + cx0x2 = 0x6</code>)。<br>先将sp的值给bx，因为只有bx和bp能够使用间接寻址。然后将ax传1，目的是初始化返回值为1。接下来用<code>cld</code>清空方向寄存器。接着将字符串长度11传给<code>cx</code>，然后将传入的地址传入<code>si、loader</code>文件名地址传给di，并使用repe cmpsb来进行逐byte比较，比较11次。<code>cmpsb</code>规定了比较跨度，按byte进行比较。<code>repe</code>规定了比较方法，当前两个字节中有一个字节不相等就会跳出这条语句。每比较一次，<code>si</code>和<code>di</code>会自增1，<code>cx</code>会自减1。比较这条语句结束时的cx值就能判断两个字符串是否相等。使用<code>jcxz</code>，当<code>cx</code>为0时判断两个字符串相等，跳到Label_Equal，否则将ax清零。<br>最后将保护的cx和bx出栈恢复，并返回。<br>到这里整个查找文件的过程就完成了。接下来回到主流程上，继续引导程序。</p>
+<pre><code class="ASM">cmp     ax, 0
+jne     Label_LoaderFound
+
+; loader not found
+push    0x0100
+push    ErrLoaderNotFoundLength
+push    ErrLoaderNotFound
+call    Func_PrintString
+
+jmp     $</code></pre>
+<p>判断<code>Func_FildFile</code>的返回值。如果是0则说明没有找到文件，打印一个没找到文件的错误提示后使用<code>jmp $</code>循环等待。否则跳到<code>Label_LoaderFound</code>执行读文件过程。</p>
+<pre><code class="ASM">Label_LoaderFound:
+mov     [CurrentCluster], ax
+
+; read FAT Table to buffer
+mov     bx, BufferAddr
+xor     cx, cx
+Label_ReadFATTable:
+mov     ax, FATTabStart
+add     ax, cx
+push    bx
+push    ax
+call    Func_ReadOneSector
+
+add     bx, [BPB_BytesPerSec]
+inc     cx
+cmp     cx, [BPB_FATSz16]
+jle     Label_ReadFATTable</code></pre>
+<p>先将<code>Func_FindFile</code>返回的文件首簇号存到<code>CurrentCluster</code>全局变量中。本来是要避免使用全局变量的，但是考虑到节省空间(偷懒)，使用了一个全局变量来存。<br>要读文件，先要将FAT表读到内存中。因为要通过FAT表进行索引，才能找到文件所有的簇。将Buffer地址传给bx，将cx清零，并进入读取循环。将<code>FATTabStart</code>，也就是FAT表起始扇区号，传给<code>ax</code>，并加上偏移<code>cx</code>得到当前要读入的扇区号，然后调用<code>Func_ReadOneSector</code>将这个扇区读入到Buffer中。每次循环都将<code>bx</code>指针后移<code>BPB_BytesPerSec</code>个字节，在这就是512字节，来存放下一个扇区的数据。自增<code>cx</code>计数器后判断是否不大于<code>Label_ReadFATTable</code>，也就是判断是否到FAT表结尾扇区。如果没有读到FAT表结尾扇区，则继续下一次循环，读取下一个扇区，否则跳出循环。<br>接下来就要根据首簇号在FAT表中索引来读入整个文件了。</p>
+<pre><code class="ASM">; BX = Loader address
+mov     bx, BaseOfLoader
+mov     es, bx
+mov     bx, OffsetOfLoader
+Label_StartRead:
+mov     ax, [CurrentCluster]
+add     ax, DataStart
+push    bx
+push    ax
+call    Func_ReadOneSector
+
+; move bx to next buffer addr
+add     bx, [BPB_BytesPerSec]
+
+mov     ax, [CurrentCluster]
+call    Func_GetNextCluster
+mov     [CurrentCluster], ax
+cmp     ax, 0xfef
+jle     Label_StartRead</code></pre>
+<p>先将<code>BaseOfLoader</code>传给<code>bx</code>，作为中间值存放，传给<code>es</code>段寄存器(段寄存器不能直接传立即数)，然后再将<code>OffsetOfLoader</code>传给<code>bx</code>，这样<code>es:bx</code>就是<code>BaseOfLoader:OffsetOfLoader</code>了。<br>然后，将当前簇号传给ax，并加上DataStart得到其在数据区的扇区号，调用<code>Func_ReadOneSector</code>来读入这个扇区的内容，由于每个簇在这是一个扇区，就不用考虑多簇的情况了。<br>读入后，将<code>bx</code>指针往后移动一个扇区的字节数，也就是下一个扇区的存放处。<br>接着，将当前簇号传给<code>ax</code>，并调用<code>Func_GetNextCluster</code>来得到下一个簇号。<code>Func_GetNextCluster</code>是一个函数，实现为通过当前簇号查询FAT表得到下一个簇号。然后比较下一簇的值是否不大于<code>0xfef</code>，如果不大于则判断为下一簇有效，继续读入下一簇。关于FAT表中每个取值范围的意义，可以参考<a href="http://elm-chan.org/docs/fat_e.html" target="_blank" rel="noopener">FAT Filesystem</a>。<br>这里还没有提到<code>Func_GetNextCluster</code>的具体实现。下面是其描述。</p>
+<pre><code class="ASM">;;; Function:       Func_GetNextCluster
+;;; Params:         AX = CurrentCluster
+;;; Return value:   AX = NextCluster
+;;; Descryption:    Get next cluster number according to current clus num.</code></pre>
+<p><code>Func_GetNextCluster</code>接受<code>ax</code>作为参数，表示当前簇号，并通过<code>ax</code>返回下一簇的簇号。<br>下面是其实现。</p>
+<pre><code class="ASM">Func_GetNextCluster:
+push    bx
+push    cx
+push    bp
+
+; use bp to judge odd
+mov bp, ax
+
+mov     bx, 3
+mul     bx
+shr     ax, 1 ; AX = CurClus * 3 / 2 = CurClus * 1.5
+mov     bx, ax
+mov     bx, [bx + BufferAddr]
+
+shr     bp, 1
+jc      Label_Odd
+
+and     bx, 0x0fff
+jmp Label_GetNextClusRet
+
+Label_Odd:
+shr     bx, 4
+
+Label_GetNextClusRet:
+mov     ax, bx
+
+pop     bp
+pop     cx
+pop     bx
+ret</code></pre>
+<p>关于FAT表的索引方法，可以参考上面提到的两个文献。里面都比较清晰地说明了计算下一个索引的方法。或者参考我写的上一章，也提到了计算方法，并使用C语言进行了实现。<br>首先仍然是保护寄存器。然后将<code>ax</code>的值传给<code>bp</code>，用来判断奇偶。这里的<code>bp</code>仅仅是用来判断奇偶的，而不是用来寻址的。接着，就要用当前簇号的值乘1.5得到当前的字节偏移。由于只需要结果的整数部分，不要求精度，所以不需要去用<code>FP</code>寄存器计算了。这里使用当前簇号乘3再右移1位(除2)来实现乘1.5。得到字节偏移之后，将其传给<code>bx</code>，用<code>BufferAddr</code>加上这个偏移，得到下一个簇号的一个word的值。判断当前簇号是偶数还是奇数，如果是偶数，则用这个值与<code>0x0fff</code>做与操作，如果是奇数，则右移4位，得到最终的下一簇簇号。<br>将下一簇簇号传入<code>ax</code>中，并恢复寄存器，然后返回。<br>到这里，从构造的FAT12文件系统中寻找和读入<code>Loader</code>文件的过程就完成了。接下来只需要一个<code>jmp</code>跳转过去，控制权就交给Loader了。而Loader大小可以非常大，不像Boot限制在一个扇区内，实现的时候可以不用缩手缩脚的了。<br>跳转到loader:</p>
+<pre><code class="ASM">; jump to loader
+jmp BaseOfLoader:OffsetOfLoader</code></pre>
+<p>剩下的一些字符串、全局变量和padding以及signature如下：</p>
+<pre><code class="ASM">; Strings
+StartBootMessageLength  equ 16
+StartBootMessage        db &#39;Start booting...&#39;
+ErrLoaderNotFoundLength equ 24
+ErrLoaderNotFound       db &#39;Error! Loader not found!&#39;
+LoaderFileName          db &#39;LOADER  BIN&#39;
+
+; values
+CurrentCluster          dw  0
+
+; padding zero
+times   510 - ($ - $$) db 0
+; boot signature
+dw 0xaa55</code></pre>
+<h1 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03 总结"></a>0x03 总结</h1><p>这一章实现了一个完整的Boot程序，在构建的FAT12文件系统根目录中查找Loader文件，将Loader载入内存中并跳转到Loader处执行。<br>在实现Boot的时候，我总是有一个担心：512 B到底够不够，我写到这是不是快满了？所以实现起来缩手缩脚的，很多想法都不敢去实现。事实证明，真的快满了。如下图。<br><img src="https://kernelthread.top/images/2020-04-29/4/1.png" alt="编译后的Boot"><br>能看到编译后离Signature<code>0x55 0xAA</code>只有红框处的一点空间了。<br>通过对Boot进行编写，能够熟悉FAT12文件系统的工作原理，为之后构建更复杂的文件系统打下基础。<br>下一章就要开始编写Loader，进行内核加载了。</p>
+<p>当前实现的进度我都会push到Github中，可以通过Github来获取完整代码：<br><a href="https://github.com/DalvikArt/OperatingSystem" target="_blank" rel="noopener">Github地址</a></p>
+
+</div>
+
+
+    <div class="post-guide">
+        <div class="item left">
+            
+        </div>
+        <div class="item right">
+            
+              <a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x03-%E7%86%9F%E6%82%89FAT12%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+                实现一个简单的64位操作系统-0x03-熟悉FAT12文件系统
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+              </a>
+            
+        </div>
+    </div>
+
+
+
+
+<script>
+	
+	
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '1e0b395c74c9ba4f67a7',
+        clientSecret: '16e380a9e38e108cd600628b383dd0b4fbf668ca',
+        id: window.location.pathname,
+        repo: 'GitalkRepo',
+        owner: 'DalvikArt',
+        admin: 'DalvikArt'
+    })
+    gitalk.render('gitalk-container')
+</script>
+
+	</div>
+	<div id="footer">
+	<p>
+	©2020-<span id="footerYear"></span> 
+	<a href="/">Kernel Thread</a> 
+	
+	
+	<br>
+	Hexo 主题作者：<a href="//github.com/wujun234" target="_blank">WuJun</a>
+	</p>
+</div>
+<script type="text/javascript"> 
+	document.getElementById('footerYear').innerHTML = new Date().getFullYear() + '';
+</script>
+	<button id="totop-toggle" class="toggle"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+</body>
+</html>

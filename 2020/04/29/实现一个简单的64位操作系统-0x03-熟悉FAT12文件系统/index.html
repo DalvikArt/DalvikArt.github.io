@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	
+	<!-- title -->
+	
+	<title>
+	
+		实现一个简单的64位操作系统-(0x03)熟悉FAT12文件系统 | 
+	 
+	Kernel Thread
+	</title>
+	
+	<!-- keywords,description -->
+	 
+		<meta name="description" content="一个喜欢音乐的科研小白的博客" />
+	
+
+	<!-- favicon -->
+	
+	<link rel="shortcut icon" href="/favicon.png">
+	
+  
+
+	
+<link rel="stylesheet" href="/css/main.css">
+
+	
+<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/darcula.min.css">
+
+
+	
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery-pjax@2.0.1/jquery.pjax.min.js"></script>
+
+	
+<script src="/js/main.js"></script>
+
+	
+		
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
+
+		
+<script src="https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js"></script>
+
+	
+	
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+	<header id="header">
+    <a id="title" href="/" class="logo">Kernel Thread</a>
+
+	<ul id="menu">
+		<li class="menu-item">
+			<a href="/about" class="menu-item-link">ABOUT</a>
+		</li>
+		
+		<!--
+		<li class="menu-item">
+			<a href="https://github.com/wujun234/uid-generator-spring-boot-starter" class="menu-item-link" target="_blank">
+				UidGenerator
+			</a>
+		</li>
+		-->
+		<li class="menu-item">
+			<a href="https://github.com/dalvikart" class="menu-item-link" target="_blank">
+				<i class="fa fa-github fa-2x"></i>
+			</a>
+		</li>
+	</ul>
+</header>
+
+	
+<div id="sidebar">
+	<button id="sidebar-toggle" class="toggle" ><i class="fa fa-arrow-right " aria-hidden="true"></i></button>
+	
+	<div id="site-toc">
+		<input id="search-input" class="search-input" type="text" placeholder="search...">
+		<div id="tree">
+			
+
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+										实现一个简单的64位操作系统-0x01-环境搭建
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x02-%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84boot/">
+										实现一个简单的64位操作系统-0x02-编写一个简单的boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file active">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x03-%E7%86%9F%E6%82%89FAT12%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+										实现一个简单的64位操作系统-0x03-熟悉FAT12文件系统
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x04-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84Boot/">
+										实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+		</div>
+	</div>
+</div>
+
+	<!-- 引入正文 -->
+	<div id="content">
+		<h1 id="article-title">
+
+	实现一个简单的64位操作系统-0x03-熟悉FAT12文件系统
+</h1>
+<div class="article-meta">
+	
+	<span>Kernel Thread</span>
+	<span>2020-04-29 00:56:07</span>
+    
+		<div id="article-categories">
+            
+		</div>
+    
+</div>
+
+<div id="article-content">
+	<h1 id="0x01-概述"><a href="#0x01-概述" class="headerlink" title="0x01 概述"></a>0x01 概述</h1><p>之前已经实现了一个简单的boot程序，但是它最大只能占一个Sector，也就是512 Bytes，局限性太大，能够完成的工作不多。接下来就要想办法加载一个更大的程序，用这个更大的程序来加载内核。这个程序就是Loader。<br>为了能够避免地址硬编码的问题，需要实现一个简单的文件系统来加载Loader与内核。当有了一个文件系统之后，就能灵活地将数据写入软盘以及加载到内存中了。<br>这里选择的是FAT12文件系统，这个文件系统广泛地用于微软早期的各个系统中。关于FAT12文件系统的介绍可以看<a href="http://blog.sina.com.cn/s/blog_3edcf6b80100cr08.html" target="_blank" rel="noopener">FAT12文件系统之引导扇区结构</a>来了解FAT12文件系统的引导扇区结构，以及<a href="http://blog.sina.com.cn/s/blog_3edcf6b80100crz1.html" target="_blank" rel="noopener">FAT12文件系统之数据存储方式详解</a>来了解FAT12文件系统中文件的存储方式。<br>强烈推荐看这篇文章：<a href="http://elm-chan.org/docs/fat_e.html" target="_blank" rel="noopener">FAT Filesystem</a> 这篇文章对FAT文件系统讲得非常详细，甚至细到了每一个字段能够取哪些值，以及取值的意义。<br>这一章计划使用C语言实现一个对FAT12文件系统镜像的解析程序。选择先用C语言实现的原因是能够从镜像外的角度来观察镜像，能够对整个镜像有一个直观的了解。<br>通过使用C语言对FAT12的镜像文件进行解析，能够熟悉FAT12文件系统，同时，之后的boot实现只需要将C实现人工“翻译”成汇编即可。</p>
+<h1 id="0x02-设计"><a href="#0x02-设计" class="headerlink" title="0x02 设计"></a>0x02 设计</h1><p>实现一个程序，能够解析FAT12文件系统的镜像，输出其引导扇区结构，遍历根目录，以及对根目录特定文件数据进行读取。</p>
+<h1 id="0x03-准备镜像"><a href="#0x03-准备镜像" class="headerlink" title="0x03 准备镜像"></a>0x03 准备镜像</h1><p>准备镜像使用到了WinImage。使用WinImage创建了一个新镜像，然后往镜像内写入了几个文件，以及创建了一个目录。如下图。<br><img src="https://kernelthread.top/images/2020-04-29/3/1.png" alt="新镜像文件"><br>将其保存为sample_image.ima（注意不要保存为压缩模式，也不要加密，不然无法正确解析）。</p>
+<h1 id="0x04-实现"><a href="#0x04-实现" class="headerlink" title="0x04 实现"></a>0x04 实现</h1><h2 id="1-main函数的实现"><a href="#1-main函数的实现" class="headerlink" title="(1) main函数的实现"></a>(1) main函数的实现</h2><p>main函数负责将镜像文件读到内存中，并调用函数解析内存中的镜像文件。由于镜像文件不大，整个才1.44MB，所以索性将它整个读到内存中了。<br>先从命令行参数中拿到镜像文件名，并打开镜像。</p>
+<pre><code class="C">    if(argc != 2)
+    {
+        printf(&quot;Usage: %s ImageFile\n&quot;, argv[0]);
+        return 1;
+    }
+
+    // open image file
+    FILE *pImageFile = fopen(argv[1], &quot;rb&quot;);
+
+    if(pImageFile == NULL)
+    {
+        puts(&quot;Read image file failed!&quot;);
+        return 1;
+    }</code></pre>
+<p>然后获取文件大小并申请一个Buffer来存储文件数据。</p>
+<pre><code class="C">    // get file size
+    fseek(pImageFile,0,SEEK_END);
+    long lFileSize = ftell(pImageFile);
+
+    printf(&quot;Image size: %ld\n&quot;,lFileSize);
+
+    // alloc buffer
+    unsigned char *pImageBuffer = (unsigned char *)malloc(lFileSize);
+
+    if(pImageBuffer == NULL)
+    {
+        puts(&quot;Memmory alloc failed!&quot;);
+        return 1;
+    }</code></pre>
+<p>接着将文件读到Buffer中，并关闭文件。</p>
+<pre><code class="C">    // set file pointer to the beginning
+    fseek(pImageFile,0,SEEK_SET);
+
+    // read the whole image file into memmory
+    long lReadResult = fread(pImageBuffer,1,lFileSize,pImageFile);
+
+    printf(&quot;Read size: %ld\n&quot;,lReadResult);
+
+    if(lReadResult != lFileSize)
+    {
+        puts(&quot;Read file error!&quot;);
+        free(pImageBuffer);
+        fclose(pImageFile);
+        return 1;
+    }
+
+    // finish reading, close file
+    fclose(pImageFile);</code></pre>
+<p>最后，调用PrintImage函数打印FAT12的引导扇区结构，调用SeekRootDir来遍历根目录，调用ReadFile来读入指定文件，然后讲读到的内容输出到屏幕上。</p>
+<pre><code class="C">    // finish reading, close file
+    fclose(pImageFile);
+
+    // print FAT12 structure
+    PrintImage(pImageBuffer);
+
+    // seek files of root directory
+    SeekRootDir(pImageBuffer);
+
+    // file read buffer
+    unsigned char outBuffer[2048];
+
+    // read file 0
+    DWORD fileSize = ReadFile(pImageBuffer, &amp;FileHeaders[0], outBuffer);
+
+    printf(&quot;File size: %u, file content: \n%s&quot;,fileSize, outBuffer);</code></pre>
+<p>至此，main函数就实现完成了。接下来就要开始PrintImage、SeekRootDir、ReadFile这三个函数的实现了。</p>
+<h2 id="2-准备结构体"><a href="#2-准备结构体" class="headerlink" title="(2) 准备结构体"></a>(2) 准备结构体</h2><p>由于FAT12的引导扇区结构以及目录项结构的每个字段都是固定长度的，所以可以通过使用结构体方便地解析它们。<br>在定义它们的结构体之前，需要先给出几个宏，让每个字段的大小有一个直观的了解（原谅我的Windows混搭风格，后续再慢慢改~）。</p>
+<pre><code class="C">#define BYTE    unsigned char
+#define WORD    unsigned short
+#define DWORD   unsigned int
+
+#define BOOT_START_ADDR 0x7c00</code></pre>
+<p>使用unsigned的原因是它们在参与计算时不会使用补码（不会带上符号）。<br>BYTE表示1个字节；WORD表示单字，也就是2个字节；DWORD表示双字，也就是四个字节。<br>BOOT_START_ADDR表示Boot扇区在内存中的加载起始地址位0x7c00。<br>接下来就能根据FAT12的规范给出FAT12引导扇区的结构体了：</p>
+<pre><code class="C">typedef struct _FAT12_HEADER FAT12_HEADER;
+typedef struct _FAT12_HEADER *PFAT12_HEADER;
+
+struct _FAT12_HEADER {
+    BYTE    JmpCode[3];
+    BYTE    BS_OEMName[8];
+    WORD    BPB_BytesPerSec;
+    BYTE    BPB_SecPerClus;
+    WORD    BPB_RsvdSecCnt;
+    BYTE    BPB_NumFATs;
+    WORD    BPB_RootEntCnt;
+    WORD    BPB_TotSec16;
+    BYTE    BPB_Media;
+    WORD    BPB_FATSz16;
+    WORD    BPB_SecPerTrk;
+    WORD    BPB_NumHeads;
+    DWORD   BPB_HiddSec;
+    DWORD   BPB_TotSec32;
+    BYTE    BS_DrvNum;
+    BYTE    BS_Reserved1;
+    BYTE    BS_BootSig;
+    DWORD   BS_VolID;
+    BYTE    BS_VolLab[11];
+    BYTE    BS_FileSysType[8];
+}__attribute__((packed)) _FAT12_HEADER;</code></pre>
+<p>具体每一个成员的意义可以查阅文章<a href="http://blog.sina.com.cn/s/blog_3edcf6b80100cr08.html" target="_blank" rel="noopener">FAT12文件系统之引导扇区结构</a>。<br>其中，要格外注意的是：</p>
+<pre><code class="C">__attribute__((packed)) _FAT12_HEADER</code></pre>
+<p>__attribute__((packed)) 告诉编译器，这个结构体是不需要对齐的(GNU GCC有效)，如果不指定这个关键字，编译器在编译这个结构体时，会将其对齐，这样解析起Boot扇区就不正确了。对于这个结构体来说，会对齐6 Bytes。<br>然后是目录项结构的结构体：</p>
+<pre><code class="C">typedef struct _FILE_HEADER FILE_HEADER;
+typedef struct _FILE_HEADER *PFILE_HEADER;
+
+struct _FILE_HEADER {
+    BYTE    DIR_Name[11];
+    BYTE    DIR_Attr;
+    BYTE    Reserved[10];
+    WORD    DIR_WrtTime;
+    WORD    DIR_WrtDate;
+    WORD    DIR_FstClus;
+    DWORD   DIR_FileSize;
+}__attribute__((packed)) _FILE_HEADER;</code></pre>
+<h2 id="3-PrintImage实现"><a href="#3-PrintImage实现" class="headerlink" title="(3) PrintImage实现"></a>(3) PrintImage实现</h2><p>PrintImage函数负责打印被解析的_FAT12_HEADER结构体。其实现如下。</p>
+<pre><code class="C">void PrintImage(unsigned char *pImageBuffer)
+{
+    puts(&quot;\nStart to print image:\n&quot;);
+
+    PFAT12_HEADER pFAT12Header = (PFAT12_HEADER)pImageBuffer;
+
+    // calculate start address of boot program
+    WORD wBootStart = BOOT_START_ADDR + pFAT12Header-&gt;JmpCode[1] + 2;
+    printf(&quot;Boot start address: 0x%04x\n&quot;,wBootStart);
+
+    char buffer[20];
+
+    memcpy(buffer,pFAT12Header-&gt;BS_OEMName,8);
+    buffer[8] = 0;
+
+    printf(&quot;BS_OEMName:         %s\n&quot;,buffer);
+    printf(&quot;BPB_BytesPerSec:    %u\n&quot;,pFAT12Header-&gt;BPB_BytesPerSec);
+    printf(&quot;BPB_SecPerClus:     %u\n&quot;,pFAT12Header-&gt;BPB_SecPerClus);
+    printf(&quot;BPB_RsvdSecCnt:     %u\n&quot;,pFAT12Header-&gt;BPB_RsvdSecCnt);
+    printf(&quot;BPB_NumFATs:        %u\n&quot;,pFAT12Header-&gt;BPB_NumFATs);
+    printf(&quot;BPB_RootEntCnt:     %u\n&quot;,pFAT12Header-&gt;BPB_RootEntCnt);
+    printf(&quot;BPB_TotSec16:       %u\n&quot;,pFAT12Header-&gt;BPB_TotSec16);
+    printf(&quot;BPB_Media:          0x%02x\n&quot;,pFAT12Header-&gt;BPB_Media);
+    printf(&quot;BPB_FATSz16:        %u\n&quot;,pFAT12Header-&gt;BPB_FATSz16);
+    printf(&quot;BPB_SecPerTrk:      %u\n&quot;,pFAT12Header-&gt;BPB_SecPerTrk);
+    printf(&quot;BPB_NumHeads:       %u\n&quot;,pFAT12Header-&gt;BPB_NumHeads);
+    printf(&quot;BPB_HiddSec:        %u\n&quot;,pFAT12Header-&gt;BPB_HiddSec);
+    printf(&quot;BPB_TotSec32:       %u\n&quot;,pFAT12Header-&gt;BPB_TotSec32);
+    printf(&quot;BS_DrvNum:          %u\n&quot;,pFAT12Header-&gt;BS_DrvNum);
+    printf(&quot;BS_Reserved1:       %u\n&quot;,pFAT12Header-&gt;BS_Reserved1);
+    printf(&quot;BS_BootSig:         %u\n&quot;,pFAT12Header-&gt;BS_BootSig);
+    printf(&quot;BS_VolID:           %u\n&quot;,pFAT12Header-&gt;BS_VolID);
+
+    memcpy(buffer,pFAT12Header-&gt;BS_VolLab,11);
+    buffer[11] = 0;
+    printf(&quot;BS_VolLab:          %s\n&quot;,buffer);
+
+    memcpy(buffer,pFAT12Header-&gt;BS_FileSysType,8);
+    buffer[11] = 0;
+    printf(&quot;BS_FileSysType:     %s\n&quot;,buffer);
+}</code></pre>
+<p>其中，由于能够相信pImageBuffer的首地址开始就是_FAT12_HEADER结构体，<code>PFAT12_HEADER pFAT12Header = (PFAT12_HEADER)pImageBuffer;</code>直接将读到内存中的镜像文件首地址传给FAT12_HEADER结构体指针，进行强制转化，就能对各字段进行读取了。<br><code>WORD wBootStart = BOOT_START_ADDR + pFAT12Header-&gt;JmpCode[1] + 2;</code>将BOOT_START_ADDR（Boot扇区读到内存中的首地址）加上跳转Offset再加上2就能得到引导程序的收地了。引导扇区一开始是一个JMP Offset和一个NOP。在实模式下，JMP Offset占两个Bytes，NOP占一个Byte。其中，JMP Offset的操作码为0xEB，操作数(Offset)占一个Byte，NOP为0x90，占一个Byte。所以，这整个就是 0xEB  Offset  0x90。如果想要得到跳转地址，就需要将当前地址(BOOT_START_ADDR)加上跳转偏移(Offset， 也就是JmpCode[1])，再加上2（JMP Offset的指令长度，因为Offset是针对当前指令的下一条指令地址来的）。也就是<code>BOOT_START_ADDR + pFAT12Header-&gt;JmpCode[1] + 2</code>。<br>接着，分别对每个字段进行打印。PrintImage的使命就完成了。</p>
+<h2 id="4-SeekRootDir的实现"><a href="#4-SeekRootDir的实现" class="headerlink" title="(4) SeekRootDir的实现"></a>(4) SeekRootDir的实现</h2><p>SeekRootDir用来遍历Root Directory，将文件名、文件属性和文件首簇号打印出来，并将其目录结构作为_FILE_HEADER结构体存储在一个数组中。由于这里很清除具体有多少个文件，为了省事就不动态申请内存存放了，而是使用了一个固定大小的数组。</p>
+<pre><code class="C">FILE_HEADER FileHeaders[30];
+
+void SeekRootDir(unsigned char *pImageBuffer)
+{
+    PFAT12_HEADER pFAT12Header = (PFAT12_HEADER)pImageBuffer;
+
+    puts(&quot;\nStart seek files of root dir:&quot;);
+
+    // sectors number of start of root directory
+    DWORD wRootDirStartSec = pFAT12Header-&gt;BPB_HiddSec + pFAT12Header-&gt;BPB_RsvdSecCnt + pFAT12Header-&gt;BPB_NumFATs * pFAT12Header-&gt;BPB_FATSz16;
+
+    printf(&quot;Start sector of root directory:    %u\n&quot;, wRootDirStartSec);
+
+    // bytes num of start of root directory
+    DWORD dwRootDirStartBytes = wRootDirStartSec * pFAT12Header-&gt;BPB_BytesPerSec;
+    printf(&quot;Start bytes of root directory:      %u\n&quot;,dwRootDirStartBytes);
+
+    PFILE_HEADER pFileHeader = (PFILE_HEADER)(pImageBuffer + dwRootDirStartBytes);
+
+    int fileNum = 1;
+    while(*(BYTE *)pFileHeader)
+    {
+        // copy file header to the array
+        FileHeaders[fileNum - 1] = *pFileHeader;
+
+        char buffer[20];
+        memcpy(buffer,pFileHeader-&gt;DIR_Name,11);
+        buffer[11] = 0;
+
+        printf(&quot;File no.            %d\n&quot;, fileNum);
+        printf(&quot;File name:          %s\n&quot;, buffer);
+        printf(&quot;File attributes:    0x%02x\n&quot;, pFileHeader-&gt;DIR_Attr);
+        printf(&quot;First clus num:     %u\n\n&quot;, pFileHeader-&gt;DIR_FstClus);
+
+        ++pFileHeader;
+        ++fileNum;
+    }
+}</code></pre>
+<p><code>DWORD wRootDirStartSec = pFAT12Header-&gt;BPB_HiddSec + pFAT12Header-&gt;BPB_RsvdSecCnt + pFAT12Header-&gt;BPB_NumFATs * pFAT12Header-&gt;BPB_FATSz16;</code>计算出了根目录的起始扇区。计算方法为：隐藏扇区数 + 保留扇区数(Boot Sector) + FAT表数量 × FAT表大小(Sectors)。也就是将根目录前面所有的扇区数加起来。<br>得到起始扇区数后，将其乘上每扇区的字节数就能得到根目录的起始字节偏移了：<code>DWORD dwRootDirStartBytes = wRootDirStartSec * pFAT12Header-&gt;BPB_BytesPerSec;</code>。<br>接着，讲pImageBuffer地址加上计算出的根目录字节偏移就能得到根目录第一个文件的_FILE_HEADER结构体：<code>PFILE_HEADER pFileHeader = (PFILE_HEADER)(pImageBuffer + dwRootDirStartBytes);</code>。之后就能够对这个结构体进行操作，然后使用<code>++pFileHeader;</code>来遍历根目录。<br>根据pFileHeader的第一个Byte是否为0x00来判断是否到达最后一个文件（这个判断是不对的，中间有文件可能被删除，而且可能隔着0x00后面还有有效文件，所以这里需要后续再改。但是仅仅针对这一个构造的Image是有效的，就暂时用着了）。最终得到的文件都放入<code>FileHeaders</code>中。</p>
+<h2 id="5-ReadFile的实现"><a href="#5-ReadFile的实现" class="headerlink" title="(5) ReadFile的实现"></a>(5) ReadFile的实现</h2><p>ReadFile函数能够根据传入的_FILE_HEADER结构体从传入的ImageBuffer中读出数据，并写到传入的outBuffer中。实现如下：</p>
+<pre><code class="C">DWORD ReadFile(unsigned char *pImageBuffer, PFILE_HEADER pFileHeader, unsigned char *outBuffer)
+{
+    PFAT12_HEADER pFAT12Header = (PFAT12_HEADER)pImageBuffer;
+
+    char nameBuffer[20];
+    memcpy(nameBuffer, pFileHeader-&gt;DIR_Name, 11);
+    nameBuffer[11] = 0;
+
+    printf(&quot;The FAT chain of file %s:\n&quot;, nameBuffer);
+
+    // calculate the pointer of FAT Table
+    BYTE *pbStartOfFATTab = pImageBuffer + (pFAT12Header-&gt;BPB_HiddSec + pFAT12Header-&gt;BPB_RsvdSecCnt) * pFAT12Header-&gt;BPB_BytesPerSec;
+
+    WORD next = pFileHeader-&gt;DIR_FstClus;
+
+    DWORD readBytes = 0;
+    do
+    {
+        printf(&quot;, 0x%03x&quot;, next);
+
+        // get the LSB of clus num
+        DWORD dwCurLSB = GetLSB(next, pFAT12Header);
+
+        // read data
+        readBytes += ReadData(pImageBuffer, dwCurLSB, outBuffer + readBytes);
+
+        // get next clus num according to current clus num
+        next = GetFATNext(pbStartOfFATTab, next);
+
+    }while(next &lt;= 0xfef);
+
+    puts(&quot;&quot;);
+
+    return readBytes;
+}</code></pre>
+<p>首先要得到FAT表的指针：<code>BYTE *pbStartOfFATTab = pImageBuffer + (pFAT12Header-&gt;BPB_HiddSec + pFAT12Header-&gt;BPB_RsvdSecCnt) * pFAT12Header-&gt;BPB_BytesPerSec;</code>，也就是用指向ImageBuffer的指针加上FAT表的偏移，就能得到这个指针。FAT表的偏移用FAT表之前的所有GetFATNext来计算下一个簇的簇号。GetFatNext的实现会在后面提到。<br>最后，将读到的字节数返回。</p>
+<h2 id="6-GetLSB的实现"><a href="#6-GetLSB的实现" class="headerlink" title="(6) GetLSB的实现"></a>(6) GetLSB的实现</h2><p>GetLSB用来计算出给出的FAT表项对应在数据区的扇区号。下面是它的实现。</p>
+<pre><code class="C">DWORD GetLSB(DWORD ClusOfTable, PFAT12_HEADER pFAT12Header)
+{
+    DWORD dwDataStartClus =  pFAT12Header-&gt;BPB_HiddSec + pFAT12Header-&gt;BPB_RsvdSecCnt + pFAT12Header-&gt;BPB_NumFATs * pFAT12Header-&gt;BPB_FATSz16 + \
+                            pFAT12Header-&gt;BPB_RootEntCnt * 32 / pFAT12Header-&gt;BPB_BytesPerSec;
+
+    return dwDataStartClus + (ClusOfTable - 2) * pFAT12Header-&gt;BPB_SecPerClus;
+}</code></pre>
+<p>也比较简单。就是将数据区前面所有的扇区号都加起来，得到数据区的起始扇区，然后将给出的FAT项减2，再乘上每簇的扇区数，加上数据区的起始扇区号，最后就得到了当前FAT项的LSB。</p>
+<h2 id="7-GetFATNext的实现"><a href="#7-GetFATNext的实现" class="headerlink" title="(7) GetFATNext的实现"></a>(7) GetFATNext的实现</h2><p>GetFATNext根据当前给出的FAT表项，得到它在FAT表里的下一项。其实现如下。</p>
+<pre><code class="C">WORD GetFATNext(BYTE *FATTable, WORD CurOffset)
+{
+    WORD tabOff = CurOffset * 1.5;
+
+    WORD nextOff = *(WORD *)(FATTable + tabOff);
+
+    nextOff = CurOffset % 2 == 0 ?  nextOff &amp; 0x0fff : nextOff &gt;&gt; 4;
+
+    return nextOff;
+}</code></pre>
+<p>由于在FAT12文件系统中，FAT表中的每一项是1.5 Bytes(6 Bits)，而又没有任何一种数据类型能够表示1.5 Bytes，所以需要用一个Word，也就是2 Bytes来存储它。但是每一项在FAT表中又是紧紧相连的，所以在读的时候需要用一点小技巧。<br>先用传来的FAT表项×1.5得到实际需要读取的值在FAT表中的Bytes偏移，然后用一个WORD来存储它。<br>接着，判断这个偏移是奇数还是偶数。如果是奇数，则将前4位清0(与上0x0fff)，如果是偶数，则将其右移4位，最终得到下一项的FAT表偏移。<br>至于这个具体是怎么来的，可以通过观察一个具体的FAT12的FAT表得出。例如下面的FAT表：<br><img src="https://kernelthread.top/images/2020-04-29/3/2.png" alt="示例FAT表"><br>由于第0项和第1项都是保留的，所以跨过前两项，直接看第2项。<br>第2项的起始Bytes是2×1.5=3，在第3 Bytes处读出一个Word，根据小端序，读出来是0x4003。然后，由于当前偏移3是奇数，所以将其前4位清零(&amp;0x0FFF)，得到0x0003，取后1.5 bytes，得到0x003，也就是它的下一项是0x003。<br>第3项的起始Bytes是3×1.5=4，在第4 Bytes处读出一个Word，得到0x0040。由于4是偶数，将其右移4位，得到0x0004。取后1.5 Bytes，得到0x004，这就是第3项的下一项。<br>以此类推。由于这里写文件的可用Cluster都是连续的，所以这里的表项也是连续的。其实FAT表像是一个单项链表，文件存储的地址是可以不连续的。</p>
+<h2 id="8-ReadData的实现"><a href="#8-ReadData的实现" class="headerlink" title="(8) ReadData的实现"></a>(8) ReadData的实现</h2><p>ReadData的实现比较简单，计算出传入的LSB在镜像Buffer中的位置(Bytes)，然后写到传入的outBuffer中。</p>
+<pre><code class="C">DWORD ReadData(unsigned char *pImageBuffer, DWORD LSB, unsigned char *outBuffer)
+{
+    PFAT12_HEADER pFAT12Header = (PFAT12_HEADER)pImageBuffer;
+
+    DWORD dwReadPosBytes = LSB * pFAT12Header-&gt;BPB_BytesPerSec;
+
+    memcpy(outBuffer, pImageBuffer + dwReadPosBytes, pFAT12Header-&gt;BPB_SecPerClus * pFAT12Header-&gt;BPB_BytesPerSec);
+
+    return pFAT12Header-&gt;BPB_SecPerClus * pFAT12Header-&gt;BPB_BytesPerSec;
+}</code></pre>
+<p>首先，使用LSB×每扇区的字节数，得到要读的扇区的字节起始值<code>DWORD dwReadPosBytes = LSB * pFAT12Header-&gt;BPB_BytesPerSec;</code>，然后用memcpy将ImageBuffer的ReadPosBytes偏移处的数据写到outBuffer中，写入长度是每簇的扇区数与每扇区的字节数的积，也就是每簇的字节数。</p>
+<p>至此，整个实现就完成了。</p>
+<h1 id="0x05-测试"><a href="#0x05-测试" class="headerlink" title="0x05 测试"></a>0x05 测试</h1><p>将程序编译后使用上面生成的镜像进行测试。<br>运行后，首先输出了镜像的引导扇区结构：<br><img src="https://kernelthread.top/images/2020-04-29/3/3.png" alt="引导扇区结构"><br>与镜像实际值对照，发现是正确的。说明程序能够正确解析改镜像的引导扇区结构。<br>然后，程序开始遍历镜像的根目录，并将根目录输出。如下图。<br><img src="https://kernelthread.top/images/2020-04-29/3/4.png" alt="根目录遍历"><br>能看到，FAT12文件系统中，文件名一共11个字节的长度，后三个字节用来存储扩展名，剩余的字节用来存储文件名，不够的字节用0x20(空格)来填充。<br>接下来，是对文件README   TXT的读取。<br><img src="https://kernelthread.top/images/2020-04-29/3/5.png" alt="读取README   TXT"><br>先输出了文件在FAT表中的所有项，然后将其读到了Buffer中。下面的内容是在main函数中对读取的buffer的打印。拉倒末尾，发现打印完整，说明整个文件都读出来了。</p>
+<h1 id="0x06-总结"><a href="#0x06-总结" class="headerlink" title="0x06 总结"></a>0x06 总结</h1><p>这一章使用C实现了一个从FAT12文件系统的镜像文件中读出引导扇区结构、根目录及特定文件的程序。接下来要做的就是将其在Boot Sector中用汇编实现出来，并加载Loader了。</p>
+<p>附件是这章用到的WinImage生成的镜像文件。</p>
+<p>附件：<br><a href="https://kernelthread-1252835152.cos.ap-guangzhou.myqcloud.com/downloads/sample_image.ima" target="_blank" rel="noopener">sample_image.ima</a></p>
+
+</div>
+
+
+    <div class="post-guide">
+        <div class="item left">
+            
+              <a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x04-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84Boot/">
+                  <i class="fa fa-angle-left" aria-hidden="true"></i>
+                  实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+              </a>
+            
+        </div>
+        <div class="item right">
+            
+              <a href="/2020/04/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x02-%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84boot/">
+                实现一个简单的64位操作系统-0x02-编写一个简单的boot
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+              </a>
+            
+        </div>
+    </div>
+
+
+
+
+<script>
+	
+	
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '1e0b395c74c9ba4f67a7',
+        clientSecret: '16e380a9e38e108cd600628b383dd0b4fbf668ca',
+        id: window.location.pathname,
+        repo: 'GitalkRepo',
+        owner: 'DalvikArt',
+        admin: 'DalvikArt'
+    })
+    gitalk.render('gitalk-container')
+</script>
+
+	</div>
+	<div id="footer">
+	<p>
+	©2020-<span id="footerYear"></span> 
+	<a href="/">Kernel Thread</a> 
+	
+	
+	<br>
+	Hexo 主题作者：<a href="//github.com/wujun234" target="_blank">WuJun</a>
+	</p>
+</div>
+<script type="text/javascript"> 
+	document.getElementById('footerYear').innerHTML = new Date().getFullYear() + '';
+</script>
+	<button id="totop-toggle" class="toggle"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+</body>
+</html>
