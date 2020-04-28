@@ -323,12 +323,11 @@ dd if=build/boot.bin of=build/boot.img bs=512 count=1 conv=notrunc</code></pre>
 <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
 <div id="gitalk-container"></div>
 <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
-<script src="https://kernelthread.top/js/md5.min.js"></script>
 <script type="text/javascript">
     var gitalk = new Gitalk({
         clientID: '1e0b395c74c9ba4f67a7',
         clientSecret: '16e380a9e38e108cd600628b383dd0b4fbf668ca',
-        id: md5(window.location.pathname),
+        id: window.location.pathname,
         repo: 'GitalkRepo',
         owner: 'DalvikArt',
         admin: 'DalvikArt'
