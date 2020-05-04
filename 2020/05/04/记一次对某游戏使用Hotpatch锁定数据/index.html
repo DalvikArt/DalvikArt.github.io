@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8">
+	<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
+	
+	<!-- title -->
+	
+	<title>
+	
+		记一次对某游戏使用Hotpatch锁定数据 | 
+	 
+	Kernel Thread
+	</title>
+	
+	<!-- keywords,description -->
+	 
+		<meta name="description" content="一个喜欢音乐的科研小白的博客" />
+	
+
+	<!-- favicon -->
+	
+	<link rel="shortcut icon" href="/favicon.png">
+	
+  
+
+	
+<link rel="stylesheet" href="/css/main.css">
+
+	
+<link rel="stylesheet" href="https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css">
+
+	
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/styles/darcula.min.css">
+
+
+	
+<script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.17.1/build/highlight.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.4.1/dist/jquery.min.js"></script>
+
+	
+<script src="https://cdn.jsdelivr.net/npm/jquery-pjax@2.0.1/jquery.pjax.min.js"></script>
+
+	
+<script src="/js/main.js"></script>
+
+	
+		
+<script src="https://cdn.jsdelivr.net/npm/leancloud-storage/dist/av-min.js"></script>
+
+		
+<script src="https://cdn.jsdelivr.net/npm/valine@1.3.10/dist/Valine.min.js"></script>
+
+	
+	
+<meta name="generator" content="Hexo 4.2.0"></head>
+
+<body>
+	<header id="header">
+    <a id="title" href="/" class="logo">Kernel Thread</a>
+
+	<ul id="menu">
+		<li class="menu-item">
+			<a href="/about" class="menu-item-link">ABOUT</a>
+		</li>
+		
+		<!--
+		<li class="menu-item">
+			<a href="https://github.com/wujun234/uid-generator-spring-boot-starter" class="menu-item-link" target="_blank">
+				UidGenerator
+			</a>
+		</li>
+		-->
+		<li class="menu-item">
+			<a href="https://github.com/dalvikart" class="menu-item-link" target="_blank">
+				<i class="fa fa-github fa-2x"></i>
+			</a>
+		</li>
+	</ul>
+</header>
+
+	
+<div id="sidebar">
+	<button id="sidebar-toggle" class="toggle" ><i class="fa fa-arrow-right " aria-hidden="true"></i></button>
+	
+	<div id="site-toc">
+		<input id="search-input" class="search-input" type="text" placeholder="search...">
+		<div id="tree">
+			
+
+			
+							<ul>
+								<li class="file">
+									<a href="/2018/08/24/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x01-%E7%8E%AF%E5%A2%83%E6%90%AD%E5%BB%BA/">
+										实现一个简单的64位操作系统-0x01-环境搭建
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2018/08/24/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x02-%E7%BC%96%E5%86%99%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84boot/">
+										实现一个简单的64位操作系统-0x02-编写一个简单的boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2018/08/27/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x03-%E7%86%9F%E6%82%89FAT12%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F/">
+										实现一个简单的64位操作系统-0x03-熟悉FAT12文件系统
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file">
+									<a href="/2018/08/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x04-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84Boot/">
+										实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+							<ul>
+								<li class="file active">
+									<a href="/2020/05/04/%E8%AE%B0%E4%B8%80%E6%AC%A1%E5%AF%B9%E6%9F%90%E6%B8%B8%E6%88%8F%E4%BD%BF%E7%94%A8Hotpatch%E9%94%81%E5%AE%9A%E6%95%B0%E6%8D%AE/">
+										记一次对某游戏使用Hotpatch锁定数据
+									</a>
+								</li>
+								<div class="article-toc" style="display: none;"></div>
+							</ul>
+			
+		</div>
+	</div>
+</div>
+
+	<!-- 引入正文 -->
+	<div id="content">
+		<h1 id="article-title">
+
+	记一次对某游戏使用Hotpatch锁定数据
+</h1>
+<div class="article-meta">
+	
+	<span>Kernel Thread</span>
+	<span>2020-05-04 22:42:28</span>
+    
+		<div id="article-categories">
+            
+		</div>
+    
+</div>
+
+<div id="article-content">
+	<h2 id="0x00-开头废话"><a href="#0x00-开头废话" class="headerlink" title="0x00 开头废话"></a>0x00 开头废话</h2><p>最近突然想玩一款农场类的游戏，就随便找了一个休闲种地的游戏玩了玩。</p>
+<p>在玩的时候发现游戏还挺不错，挺养生的。但是这游戏有一个缺点，就是它的拖拉机太虚了，油箱小得跟个可乐罐似的，动不动就要跑去加油。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/1.png" alt="应该有人看图就能猜出是啥游戏了"></p>
+<p>Nobody knows tractor better than me. 拖拉机的油箱不可能这么小。</p>
+<p>虽然没油了可以去加油站加油，但是这就严重影响了游戏体验。种地种一半，没油了，就得满地图跑加油站加油。那这还是养生游戏吗？</p>
+<p>所以我打算给游戏打个Hotpatch，让油量不会减少，这样就能开心地种地了。而且只锁定一个油量，不改其它东西，也不会影响游戏体验。</p>
+<h2 id="0x01-寻找存储油量的地址和减少油量的代码"><a href="#0x01-寻找存储油量的地址和减少油量的代码" class="headerlink" title="0x01 寻找存储油量的地址和减少油量的代码"></a>0x01 寻找存储油量的地址和减少油量的代码</h2><p>对这种没啥保护的游戏，首先考虑用CE。</p>
+<p>由于无法知道当前油量的精确数值，所以先模糊搜索，得到所有可能为Data的地址。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/2.png" alt=""></p>
+<p>得到一大堆地址。没事，游戏里走两步墨迹一会(注意不要让油量发生变化)，然后再筛出那些未变化的数值。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/3.png" alt=""></p>
+<p>可以看到还是又很多地址。然后，随便干些事情，让油量减少一些。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/4.png" alt=""></p>
+<p>然后筛出那些减小的数据。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/5.png" alt=""></p>
+<p>然后再闲逛一下，筛出不变的数据。如此往复，就能筛掉大部分不符合条件的地址。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/6.png" alt=""></p>
+<p>最后几十个可能会比较难筛。这时候可以跑去加加油，然后筛出增加的数据，再筛几次减少的，就能找到存储油量的地址了。</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/7.png" alt=""></p>
+<p>最后能够筛出个位数的地址。这时候就比较好找了。三个数据，很明显前两个不可能是用来存储油量的，那就是第三个地址0x2EBD41FD8D4存储的是油量。</p>
+<p>看一下这块内存：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/8.png" alt=""></p>
+<p>能看到游戏作者用了32位的int来存储油量。</p>
+<p>接着，把CE的Debugger挂上游戏进程，用内存断点来看看谁在写这块内存。<br>挂上Debugger之后，随便做点降油量的事情，然后看结果：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/9.png" alt=""></p>
+<p>能看到是0x2EB8526E42D这个地址的代码写了这块地址。看看这个函数的反汇编：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/10.png" alt=""></p>
+<p>能看出来，这个函数有两个参数。一个参数是存有油量的结构体，油量是它一个4 bytes的成员，偏移为0xDC。另一个参数是要减少的油量。</p>
+<p>先把剩余油量取出来：</p>
+<pre><code class="ASM">2EB8526E410 - 8B 87 DC000000        - mov eax,[rdi+000000DC] </code></pre>
+<p>然后跟需要减少的油量比较：</p>
+<pre><code class="ASM">2EB8526E416 - 3B C6                 - cmp eax,esi</code></pre>
+<p>如果油量够的话，就用剩余油量减去需要扣除的油量，然后重新存回结构体中：</p>
+<pre><code class="ASM">2EB8526E420 - 8B 8F DC000000        - mov ecx,[rdi+000000DC]
+2EB8526E426 - 2B CE                 - sub ecx,esi
+2EB8526E428 - 3B C1                 - cmp eax,ecx
+2EB8526E42A - 0F42 C1               - cmovb eax,ecx
+2EB8526E42D - 89 87 DC000000        - mov [rdi+000000DC],eax</code></pre>
+<p>那么，这就简单了。我们只需要把油量存回的那条指令给NOP掉，就可以快乐地玩耍了:</p>
+<pre><code class="ASM">2EB8526E42D - 89 87 DC000000        - mov [rdi+000000DC],eax</code></pre>
+<p>先看一下这块内存是在哪个section中。我们先拿到这一块的基地址0x2EB8526E000：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/11.png" alt=""></p>
+<p>顺便得到了这块内存的保护状态。目前是PAGE_EXECUTE_READWRITE，看起来应该是动态分配的地址，而且为了动态写入代码，把所有的权限都加上了。这样的话，改起来就简单了。</p>
+<p>把Debugger挂上去，看一下这块内存映射到了哪里：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/12.png" alt=""></p>
+<p>能看到，这块内存其实是从0x000002EB85220000开始分配的，大小为0x100000。这一整个大块内存的权限都为ERW。</p>
+<p>我对Unity不是很熟悉，不太清楚这块内存是怎么分配的，但是大致能猜出来是先分配了一大块内存，然后把需要的代码分成模块载入。</p>
+<h2 id="0x02-实现Hotpatch"><a href="#0x02-实现Hotpatch" class="headerlink" title="0x02 实现Hotpatch"></a>0x02 实现Hotpatch</h2><p>这块地址不太好通过基地址来找，所以考虑使用特征码搜索的方法来实现Hotpatch。</p>
+<p>首先把特征码确定好。使用修改油量的指令加上后两条指令的机器码作为特征码：</p>
+<pre><code class="ASM">89 87 DC000000      - mov [rdi+000000DC],eax
+48 8B 87 A8000000   - mov rax,[rdi+000000A8]
+48 85 C0            - test rax,rax</code></pre>
+<p>确定特征码为：<br><code>89 87 DC 00 00 00 48 8B 87 A8 00 00 00 48 85 C0</code></p>
+<p>首先遍历一下进程，拿到游戏进程的句柄：</p>
+<pre><code class="C">DWORD pid = FindProcess(PROCESS_NAME);
+HANDLE hProc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);</code></pre>
+<p>FindProcess用来查找指令进程名的PID。遍历搜索进程PID的方法一搜一大把，就不赘述了。</p>
+<p>接着在内存中搜索特征码：</p>
+<pre><code class="C">const BYTE signature[] = { 0x89 ,0x87 ,0xDC ,0x00 ,0x00 ,0x00,0x48 ,0x8B ,0x87 ,0xA8 ,0x00 ,0x00 ,0x00, 0x48 ,0x85 ,0xC0 };
+LPVOID targetAddr = SearchMem(hProc, signature, sizeof(signature));</code></pre>
+<p>SearchMem实现如下：</p>
+<pre><code class="C">LPVOID SearchMem(HANDLE hProc, const BYTE signature[], DWORD sigSize)
+{
+    MEMORY_BASIC_INFORMATION info;
+    BYTE* chunk = NULL;
+    BYTE* current = 0;
+
+    while (VirtualQueryEx(hProc, current, &amp;info, sizeof(info)) == sizeof(info))
+    {
+        if ((info.State == MEM_COMMIT) &amp;&amp; (info.Protect &amp; PAGE_EXECUTE_READWRITE) &amp;&amp; !(info.Protect &amp; PAGE_GUARD))
+        {
+            current = (unsigned char*)info.BaseAddress;
+            chunk = new BYTE[info.RegionSize];
+
+            SIZE_T bytesRead;
+            if (ReadProcessMemory(hProc, current, &amp;chunk[0], info.RegionSize, &amp;bytesRead))
+            {
+                for (size_t i = 0; i &lt; (bytesRead - sigSize); ++i)
+                {
+                    if (memcmp(signature, chunk + i, sigSize) == 0)
+                    {
+                        return current + i;
+                    }
+                }
+            }
+
+            delete[] chunk;
+        }
+
+        current += info.RegionSize;
+    }
+
+    return NULL;
+}</code></pre>
+<p>使用VirtualQueryEx来遍历所有的section。使用current来记录当前地址。每遍历完一个section就将current加上这个section的大小来遍历下个section。</p>
+<p>如果当前section状态为MEM_COMMIT，权限标志为PAGE_EXECUTE_READWRITE（之前分析得到了这块内存是ERW权限，所以直接指定就行），并且PAGE_GUARD标志位没有置1，则把这块内存读出来搜索特征码。</p>
+<p>使用一个叫chunk的buffer来存放这块内存。使用ReadProcessMemory将整个section读出来，然后对每一个byte进行遍历，使用memcpy来判断接下来的一块内存是否与特征码相等。如果找到特征码，则反汇其地址，否则返回NULL。</p>
+<p>找到特征码之后，把 <code>mov [rdi+000000DC],eax</code> 这条指令覆盖成全NOP。这条指令一共6个bytes，全部覆盖成0x90即可。</p>
+<pre><code class="C">const BYTE payload[] = { 0x90,0x90,0x90,0x90,0x90,0x90 };
+WriteProcessMemory(hProc, targetAddr, payload, sizeof(payload), &amp;dwBytesWritten);</code></pre>
+<p>由于这块内存本来就有WRITE权限，所以不需要使用VirtualProtect来改内存权限了。否则需要使用VirtualProtect增加写权限，写完之后再把权限改回去。</p>
+<p>这样就实现好了。进游戏试试。进游戏之后先随便做些操作，消耗一些油量，目的是确保减少油量的相关代码已经载入内存中。为了好看，我每次Patch之前还会把油加满。</p>
+<p>然后运行Patcher：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/13.png" alt=""></p>
+<p>游戏里试试：</p>
+<p><img src="https://kernelthread.top/images/2020-05-04/1/compressed.gif" alt=""></p>
+<p>能看到油量不会减少了。这下终于能愉快地玩耍了。之后每次启动游戏运行一下patcher就能使油量不减少。</p>
+
+</div>
+
+
+    <div class="post-guide">
+        <div class="item left">
+            
+        </div>
+        <div class="item right">
+            
+              <a href="/2018/08/29/%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%8464%E4%BD%8D%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F-0x04-%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E5%AE%8C%E6%95%B4%E7%9A%84Boot/">
+                实现一个简单的64位操作系统-0x04-实现一个完整的Boot
+                <i class="fa fa-angle-right" aria-hidden="true"></i>
+              </a>
+            
+        </div>
+    </div>
+
+
+
+
+<script>
+	
+	
+</script>
+
+<link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<div id="gitalk-container"></div>
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+<script type="text/javascript">
+    var gitalk = new Gitalk({
+        clientID: '1e0b395c74c9ba4f67a7',
+        clientSecret: '16e380a9e38e108cd600628b383dd0b4fbf668ca',
+        id: window.location.pathname,
+        repo: 'GitalkRepo',
+        owner: 'DalvikArt',
+        admin: 'DalvikArt'
+    })
+    gitalk.render('gitalk-container')
+</script>
+
+	</div>
+	<div id="footer">
+	<p>
+	©2020-<span id="footerYear"></span> 
+	<a href="/">Kernel Thread</a> 
+	
+	
+	<br>
+	Hexo 主题作者：<a href="//github.com/wujun234" target="_blank">WuJun</a>
+	</p>
+</div>
+<script type="text/javascript"> 
+	document.getElementById('footerYear').innerHTML = new Date().getFullYear() + '';
+</script>
+	<button id="totop-toggle" class="toggle"><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+</body>
+</html>
